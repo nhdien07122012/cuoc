@@ -1,123 +1,179 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Quản lý bảng cước BCCP</title>
+  <title>Quản lý chức năng BCCP</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; margin: 10px; }
-    .container { max-width: 600px; margin: auto; overflow-x: auto; }
-    select, button { padding: 8px; margin: 8px 0; width: 100%; font-size: 1em; }
-    .tariff-section { margin-bottom: 24px; }
-    .tariff-title { font-weight: bold; font-size: 1.1em; margin: 12px 0 6px 0; color: #1976d2; }
-    .table-responsive { width: 100%; overflow-x: auto; }
-    table { width: 100%; min-width: 500px; border-collapse: collapse; margin-bottom: 12px; background: #fff; box-shadow: 0 2px 8px #0001; border-radius: 8px; overflow: hidden; }
-    th, td { 
-      padding: 8px 6px; 
-      border: 1px solid #e0e0e0; 
-      text-align: center; /* căn giữa nội dung */
-      word-break: break-word; 
+    body {
+      margin: 0;
+      background: #f4f7fa;
+      font-family: 'Roboto', Arial, sans-serif;
     }
-    th { background: #f5f5f5; }
+    .header {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      box-shadow: 0 2px 8px #0001;
+      padding: 0 16px;
+      height: 56px;
+    }
+    .logo {
+      height: 36px;
+      margin-right: 10px;
+    }
+    .header-title {
+      font-size: 1.08em;
+      font-weight: 700;
+      color: #1976d2;
+      flex: 1;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .main {
+      max-width: 100%;
+      margin: 18px auto;
+      padding: 0 4vw;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px #0001;
+      padding: 16px 10px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      transition: box-shadow 0.2s, transform 0.15s;
+      border: 2px solid transparent;
+      min-height: 100px;
+      position: relative;
+    }
+    .card:hover {
+      box-shadow: 0 4px 24px #1976d244;
+      border-color: #1976d2;
+      transform: translateY(-2px) scale(1.02);
+    }
+    .card-title {
+      font-size: 1em;
+      font-weight: 600;
+      color: #1976d2;
+      margin-bottom: 8px;
+      min-height: 36px;
+    }
+    .card-desc {
+      color: #555;
+      font-size: 0.95em;
+      flex: 1;
+      margin-bottom: 10px;
+    }
+    .card-progress {
+      height: 4px;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #ffc107 60%, #fff3cd 100%);
+      width: 60%;
+      margin-top: auto;
+    }
     @media (max-width: 600px) {
-      .container { padding: 0 2px; }
-      .tariff-title { font-size: 1em; }
-      table, th, td { font-size: 0.92em; }
-      th, td { padding: 6px 3px; text-align: center; } /* căn giữa trên mobile */
-      table { min-width: 350px; }
+      .header {
+        padding: 0 6px;
+        height: 48px;
+      }
+      .logo {
+        height: 28px;
+        margin-right: 6px;
+      }
+      .header-title {
+        font-size: 0.98em;
+      }
+      .main {
+        padding: 0 2vw;
+        margin: 10px auto;
+      }
+      .card-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .card {
+        padding: 12px 6px 10px 6px;
+        min-height: 80px;
+      }
+      .card-title {
+        font-size: 0.98em;
+        min-height: 28px;
+      }
+      .card-desc {
+        font-size: 0.93em;
+        margin-bottom: 8px;
+      }
+    }
+    /* Xóa các đoạn sau nếu có */
+    .user { display: none; }
+    .user-icon { display: none; }
+    .watermark-logo {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.07;
+      background: none;
+    }
+    .watermark-logo img {
+      max-width: 60vw;
+      max-height: 60vh;
+      width: auto;
+      height: auto;
+      filter: grayscale(1) blur(0.5px);
+      user-select: none;
+    }
+    @media (max-width: 600px) {
+      .watermark-logo img {
+        max-width: 90vw;
+        max-height: 30vh;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Quản lý bảng cước BCCP - VNPOST(2025)</h2>
-    <select id="sheetSelect"></select>
-    <div id="tariffTables"></div>
+  <div class="header">
+    <img src="logo.webp" alt="VNPost" class="logo">
+    <div class="header-title">HỆ THỐNG QUẢN LÝ CHỨC NĂNG BCCP</div>
   </div>
-  <script>
-    let workbook = null;
-
-    // Load file Excel và lấy danh sách sheet
-    async function loadWorkbook() {
-      const response = await fetch("data.xlsx");
-      const arrayBuffer = await response.arrayBuffer();
-      workbook = XLSX.read(arrayBuffer, { type: "array" });
-
-      // Đổ danh sách sheet vào select
-      const select = document.getElementById("sheetSelect");
-      select.innerHTML = "";
-      workbook.SheetNames.forEach((name, idx) => {
-        const opt = document.createElement("option");
-        opt.value = name;
-        opt.textContent = name;
-        select.appendChild(opt);
-      });
-      // Hiển thị sheet đầu tiên
-      showSheet(workbook.SheetNames[0]);
-    }
-
-    // Hiển thị sheet được chọn
-    function showSheet(sheetName) {
-      const sheet = workbook.Sheets[sheetName];
-      const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-      // Tìm hàng trống để tách 2 bảng
-      let splitIdx = data.findIndex(row => row.every(cell => cell === undefined || cell === null || cell === ""));
-      let table1 = data, table2 = [];
-      if (splitIdx !== -1) {
-        table1 = data.slice(0, splitIdx);
-        table2 = data.slice(splitIdx + 1);
-      }
-
-      // Tạo HTML cho 2 bảng
-      let html = "";
-      if (table1.length > 0) {
-        html += `<div class="tariff-section">
-          <div class="tariff-title">Cước chưa thuế</div>
-          ${renderTable(table1)}
-        </div>`;
-      }
-      if (table2.length > 0) {
-        html += `<div class="tariff-section">
-          <div class="tariff-title">Cước có thuế</div>
-          ${renderTable(table2)}
-        </div>`;
-      }
-      document.getElementById("tariffTables").innerHTML = html;
-    }
-
-    // Render bảng HTML từ mảng 2 chiều
-    function renderTable(data) {
-      if (!data || data.length === 0) return "<i>Không có dữ liệu</i>";
-      let html = '<div class="table-responsive"><table><tbody>';
-      data.forEach((row, idx) => {
-        html += "<tr>";
-        row.forEach(cell => {
-          let display = cell ?? "";
-          // Nếu là số hoặc chuỗi số, định dạng phân cách hàng ngàn
-          if (
-            typeof display === "number" ||
-            (typeof display === "string" && display.trim() !== "" && !isNaN(display))
-          ) {
-            display = Number(display).toLocaleString("en-US");
-          }
-          if (idx === 0) html += `<th>${display}</th>`;
-          else html += `<td>${display}</td>`;
-        });
-        html += "</tr>";
-      });
-      html += "</tbody></table></div>";
-      return html;
-    }
-
-    // Sự kiện chọn sheet
-    document.getElementById("sheetSelect").addEventListener("change", function() {
-      showSheet(this.value);
-    });
-
-    // Tải workbook khi vào trang
-    loadWorkbook();
-  </script>
+  <div class="main">
+    <div class="card-grid">
+      <div class="card" onclick="location.href='xembangcuoc.html'">
+        <div class="card-title">Xem bảng cước</div>
+        <div class="card-desc">Tra cứu, xem chi tiết bảng cước BCCP mới nhất.</div>
+        <div class="card-progress"></div>
+      </div>
+      <div class="card" onclick="location.href='xuatpdf.html'">
+        <div class="card-title">Xuất PDF bảng cước</div>
+        <div class="card-desc">Xuất bảng cước ra file PDF để in hoặc chia sẻ.</div>
+        <div class="card-progress"></div>
+      </div>
+      <div class="card" onclick="location.href='tinhtienchietkhau.html'">
+        <div class="card-title">Tính chiết khấu</div>
+        <div class="card-desc">Tính toán chiết khấu cho khách hàng, đại lý.</div>
+        <div class="card-progress"></div>
+      </div>
+      <!-- Có thể thêm các chức năng khác ở đây -->
+    </div>
+  </div>
+  <div class="watermark-logo">
+    <img src="logo.webp" alt="VNPost Watermark">
+  </div>
 </body>
 </html>
