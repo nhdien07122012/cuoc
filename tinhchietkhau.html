@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Tính chiết khấu bảng cước</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #f4f7fa;
+      font-family: 'Roboto', Arial, sans-serif;
+      color: #333;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      box-shadow: 0 2px 8px #0001;
+      padding: 0 16px;
+      height: 56px;
+      position: relative;
+      z-index: 10;
+    }
+    .logo {
+      height: 36px;
+      margin-right: 10px;
+    }
+    .header-title {
+      font-size: 1.08em;
+      font-weight: 700;
+      color: #1976d2;
+      flex: 1;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .back-btn {
+      background: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 1em;
+      font-weight: 500;
+      cursor: pointer;
+      margin-left: 12px;
+      transition: background 0.2s;
+      box-shadow: 0 2px 8px #0001;
+    }
+    .back-btn:hover {
+      background: #1251a3;
+    }
+    .main {
+      max-width: 100%;
+      margin: 18px auto;
+      padding: 0 4vw;
+    }
+    .container {
+      max-width: 700px;
+      margin: 32px auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #0002;
+      padding: 28px 18px 24px 18px;
+      overflow-x: auto;
+    }
+    h2 {
+      text-align: center;
+      color: #1976d2;
+      margin-bottom: 18px;
+      letter-spacing: 1px;
+    }
+    form {
+      margin-bottom: 18px;
+    }
+    .form-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .form-group {
+      flex: 1 1 180px;
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      font-size: 0.98em;
+      color: #1976d2;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    input, select {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #b0bec5;
+      background: #f8fafc;
+      font-size: 1em;
+      margin-bottom: 2px;
+      transition: border 0.2s;
+    }
+    input:focus, select:focus {
+      border: 1.5px solid #1976d2;
+      outline: none;
+    }
+    .btn-calc {
+      background: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-size: 1.05em;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+      box-shadow: 0 2px 8px #0001;
+      display: block;
+      width: 100%;
+    }
+    .btn-calc:hover {
+      background: #1251a3;
+    }
+    .tariff-section {
+      margin-bottom: 32px;
+    }
+    .tariff-title {
+      font-weight: bold;
+      font-size: 1.13em;
+      margin: 18px 0 10px 0;
+      color: #1565c0;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 0 #e3eaf3;
+    }
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      min-width: 600px;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: #fafdff;
+      box-shadow: 0 2px 12px #0001;
+      border-radius: 12px;
+      overflow: hidden;
+      table-layout: fixed;
+    }
+    th, td {
+      padding: 12px 6px;
+      border-bottom: 1.5px solid #e3eaf3;
+      text-align: center;
+      word-break: break-word;
+      font-size: 1em;
+    }
+    th {
+      background: linear-gradient(90deg, #e3f0fc 0%, #fafdff 100%);
+      color: #1976d2;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      border-bottom: 2.5px solid #1976d2;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    tr:hover td {
+      background: #e3f0fc44;
+      transition: background 0.2s;
+    }
+    .note {
+      color: #888;
+      font-size: 0.97em;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    @media (max-width: 700px) {
+      .header {
+        padding: 0 6px;
+        height: 48px;
+      }
+      .logo {
+        height: 28px;
+        margin-right: 6px;
+      }
+      .header-title {
+        font-size: 0.98em;
+      }
+      .main {
+        padding: 0 2vw;
+        margin: 10px auto;
+      }
+      .container {
+        padding: 6px 2px 18px 2px;
+      }
+      table {
+        min-width: 350px;
+        font-size: 0.97em;
+      }
+      th, td {
+        padding: 8px 3px;
+        font-size: 0.97em;
+      }
+      .tariff-title {
+        font-size: 1em;
+      }
+      .back-btn {
+        padding: 6px 10px;
+        font-size: 0.97em;
+        margin-left: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="logo.webp" alt="Logo" class="logo">
+    <div class="header-title">Tính chiết khấu bảng cước</div>
+    <button class="back-btn" onclick="window.location.href='index.html'">Quay lại</button>
+  </div>
+  <div class="main">
+    <div class="container">
+      <h2>Tính chiết khấu bảng cước</h2>
+      <form id="discountForm" autocomplete="off">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="sheetSelect">Chọn bảng cước</label>
+            <select id="sheetSelect"></select>
+          </div>
+          <div class="form-group">
+            <label for="discount">Chiết khấu (%)</label>
+            <input type="number" id="discount" min="0" max="100" step="0.01" value="0" required>
+          </div>
+        </div>
+        <button type="submit" class="btn-calc">Tính bảng cước sau chiết khấu</button>
+      </form>
+      <div class="note">Chỉ áp dụng cho bảng <b>Cước có thuế</b>. Các giá trị số sẽ được giảm trừ đúng tỷ lệ chiết khấu.</div>
+      <div id="tariffTables"></div>
+    </div>
+  </div>
+  <script>
+    let workbook = null;
+    let table2Raw = [];
+
+    // Load file Excel và lấy danh sách sheet
+    async function loadWorkbook() {
+      const response = await fetch("data.xlsx");
+      const arrayBuffer = await response.arrayBuffer();
+      workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+      // Đổ danh sách sheet vào select
+      const select = document.getElementById("sheetSelect");
+      select.innerHTML = "";
+      workbook.SheetNames.forEach((name, idx) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+      // Hiển thị sheet đầu tiên
+      showSheet(workbook.SheetNames[0]);
+    }
+
+    // Hiển thị sheet được chọn
+    function showSheet(sheetName) {
+      const sheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+      // Tìm hàng trống để tách 2 bảng
+      let splitIdx = data.findIndex(row => row.every(cell => cell === undefined || cell === null || cell === ""));
+      let table2 = [];
+      if (splitIdx !== -1) {
+        table2 = data.slice(splitIdx + 1);
+      }
+      table2Raw = table2; // Lưu bảng gốc để tính toán chiết khấu
+      renderDiscountedTable();
+    }
+
+    // Tính toán và hiển thị bảng cước sau chiết khấu
+    function renderDiscountedTable() {
+      const discount = parseFloat(document.getElementById("discount").value) || 0;
+      if (!table2Raw || table2Raw.length === 0) {
+        document.getElementById("tariffTables").innerHTML = "<i>Không có dữ liệu bảng cước có thuế.</i>";
+        return;
+      }
+      // Tạo bảng mới đã giảm trừ chiết khấu
+      const newTable = table2Raw.map((row, idx) => {
+        if (idx === 0) return row; // Header giữ nguyên
+        return row.map(cell => {
+          // Nếu là số hoặc chuỗi số, giảm trừ chiết khấu
+          if (
+            typeof cell === "number" ||
+            (typeof cell === "string" && cell.trim() !== "" && !isNaN(cell))
+          ) {
+            let val = Number(cell);
+            val = val * (1 - discount / 100);
+            return Math.round(val).toLocaleString("en-US");
+          }
+          return cell;
+        });
+      });
+
+      // Hiển thị bảng
+      let html = `<div class="tariff-section">
+        <div class="tariff-title">Bảng cước có thuế sau chiết khấu (${discount}%):</div>
+        ${renderTable(newTable)}
+      </div>`;
+      document.getElementById("tariffTables").innerHTML = html;
+    }
+
+    // Render bảng HTML từ mảng 2 chiều
+    function renderTable(data) {
+      if (!data || data.length === 0) return "<i>Không có dữ liệu</i>";
+      let html = '<div class="table-responsive"><table><tbody>';
+      data.forEach((row, idx) => {
+        html += "<tr>";
+        row.forEach(cell => {
+          if (idx === 0) html += `<th>${cell ?? ""}</th>`;
+          else html += `<td>${cell ?? ""}</td>`;
+        });
+        html += "</tr>";
+      });
+      html += "</tbody></table></div>";
+      return html;
+    }
+
+    // Sự kiện chọn sheet
+    document.getElementById("sheetSelect").addEventListener("change", function() {
+      showSheet(this.value);
+    });
+
+    // Sự kiện nhập chiết khấu
+    document.getElementById("discount").addEventListener("input", function() {
+      renderDiscountedTable();
+    });
+
+    // Sự kiện submit form
+    document.getElementById("discountForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      renderDiscountedTable();
+    });
+
+    // Tải workbook khi vào trang
+    loadWorkbook();
+  </script>
+</body>
+</html>
