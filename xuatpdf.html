@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Xuất PDF bảng cước</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #f4f7fa;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      box-shadow: 0 2px 8px #0001;
+      padding: 0 16px;
+      height: 56px;
+      position: relative;
+      z-index: 10;
+    }
+    .logo {
+      height: 36px;
+      margin-right: 10px;
+    }
+    .header-title {
+      font-size: 1.08em;
+      font-weight: 700;
+      color: #1976d2;
+      flex: 1;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .back-btn {
+      background: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 1em;
+      font-weight: 500;
+      cursor: pointer;
+      margin-left: 12px;
+      transition: background 0.2s;
+      box-shadow: 0 2px 8px #0001;
+    }
+    .back-btn:hover {
+      background: #1251a3;
+    }
+    .main {
+      max-width: 100%;
+      margin: 18px auto;
+      padding: 0 4vw;
+    }
+    .container {
+      max-width: 700px;
+      margin: 32px auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #0002;
+      padding: 28px 18px 24px 18px;
+      overflow-x: auto;
+    }
+    h2 {
+      text-align: center;
+      color: #1976d2;
+      margin-bottom: 18px;
+      letter-spacing: 1px;
+    }
+    form {
+      margin-bottom: 18px;
+    }
+    .form-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .form-group {
+      flex: 1 1 180px;
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      font-size: 0.98em;
+      color: #1976d2;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    input, select {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #b0bec5;
+      background: #f8fafc;
+      font-size: 1em;
+      margin-bottom: 2px;
+      transition: border 0.2s;
+    }
+    input:focus, select:focus {
+      border: 1.5px solid #1976d2;
+      outline: none;
+    }
+    .btn-export {
+      background: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-size: 1.05em;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+      box-shadow: 0 2px 8px #0001;
+      display: block;
+      width: 100%;
+    }
+    .btn-export:hover {
+      background: #1251a3;
+    }
+    .tariff-section {
+      margin-bottom: 32px;
+    }
+    .tariff-title {
+      font-weight: bold;
+      font-size: 1.13em;
+      margin: 18px 0 10px 0;
+      color: #1565c0;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 0 #e3eaf3;
+    }
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      min-width: 600px;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: #fafdff;
+      box-shadow: 0 2px 12px #0001;
+      border-radius: 12px;
+      overflow: hidden;
+      table-layout: fixed;
+    }
+    th, td {
+      padding: 12px 6px;
+      border-bottom: 1.5px solid #e3eaf3;
+      text-align: center;
+      word-break: break-word;
+      font-size: 1em;
+    }
+    th {
+      background: linear-gradient(90deg, #e3f0fc 0%, #fafdff 100%);
+      color: #1976d2;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      border-bottom: 2.5px solid #1976d2;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    tr:hover td {
+      background: #e3f0fc44;
+      transition: background 0.2s;
+    }
+    @media (max-width: 700px) {
+      .header {
+        padding: 0 6px;
+        height: 48px;
+      }
+      .logo {
+        height: 28px;
+        margin-right: 6px;
+      }
+      .header-title {
+        font-size: 0.98em;
+      }
+      .main {
+        padding: 0 2vw;
+        margin: 10px auto;
+      }
+      .container {
+        padding: 6px 2px 18px 2px;
+      }
+      table {
+        min-width: 350px;
+        font-size: 0.97em;
+      }
+      th, td {
+        padding: 8px 3px;
+        font-size: 0.97em;
+      }
+      .tariff-title {
+        font-size: 1em;
+      }
+      .back-btn {
+        padding: 6px 10px;
+        font-size: 0.97em;
+        margin-left: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="logo.webp" alt="Logo" class="logo">
+    <div class="header-title">Xuất PDF bảng cước</div>
+    <button class="back-btn" onclick="window.location.href='index.html'">&#8592; Quay lại</button>
+  </div>
+  <div class="main">
+    <div class="container">
+      <h2>Báo giá bảng cước cho khách hàng</h2>
+      <form id="infoForm" autocomplete="off">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="customerName">Họ tên khách hàng</label>
+            <input type="text" id="customerName" required>
+          </div>
+          <div class="form-group">
+            <label for="customerPhone">Số điện thoại</label>
+            <input type="tel" id="customerPhone" required pattern="[0-9]{8,15}">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex:2">
+            <label for="customerAddress">Địa chỉ</label>
+            <input type="text" id="customerAddress" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="flex:2">
+            <label for="sheetSelect">Chọn bảng cước</label>
+            <select id="sheetSelect"></select>
+          </div>
+        </div>
+        <button type="submit" class="btn-export">Xuất PDF báo giá</button>
+      </form>
+      <div id="tariffTables"></div>
+    </div>
+  </div>
+  <div id="pdfContent" style="display:none"></div>
+  <script>
+    let workbook = null;
+    let currentSheetName = "";
+
+    // Load file Excel và lấy danh sách sheet
+    async function loadWorkbook() {
+      const response = await fetch("data.xlsx");
+      const arrayBuffer = await response.arrayBuffer();
+      workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+      // Đổ danh sách sheet vào select
+      const select = document.getElementById("sheetSelect");
+      select.innerHTML = "";
+      workbook.SheetNames.forEach((name, idx) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+      // Hiển thị sheet đầu tiên
+      currentSheetName = workbook.SheetNames[0];
+      showSheet(currentSheetName);
+    }
+
+    // Hiển thị sheet được chọn
+    function showSheet(sheetName) {
+      currentSheetName = sheetName;
+      const sheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+      // Tìm hàng trống để tách 2 bảng
+      let splitIdx = data.findIndex(row => row.every(cell => cell === undefined || cell === null || cell === ""));
+      let table1 = data, table2 = [];
+      if (splitIdx !== -1) {
+        table1 = data.slice(0, splitIdx);
+        table2 = data.slice(splitIdx + 1);
+      }
+
+      // Tạo HTML cho 2 bảng
+      let html = "";
+      if (table1.length > 0) {
+        html += `<div class="tariff-section">
+          <div class="tariff-title">Cước chưa thuế</div>
+          ${renderTable(table1)}
+        </div>`;
+      }
+      if (table2.length > 0) {
+        html += `<div class="tariff-section">
+          <div class="tariff-title">Cước có thuế</div>
+          ${renderTable(table2)}
+        </div>`;
+      }
+      document.getElementById("tariffTables").innerHTML = html;
+    }
+
+    // Render bảng HTML từ mảng 2 chiều
+    function renderTable(data) {
+      if (!data || data.length === 0) return "<i>Không có dữ liệu</i>";
+      let html = '<div class="table-responsive"><table><tbody>';
+      data.forEach((row, idx) => {
+        html += "<tr>";
+        row.forEach(cell => {
+          let display = cell ?? "";
+          // Nếu là số hoặc chuỗi số, định dạng phân cách hàng ngàn
+          if (
+            typeof display === "number" ||
+            (typeof display === "string" && display.trim() !== "" && !isNaN(display))
+          ) {
+            display = Number(display).toLocaleString("en-US");
+          }
+          if (idx === 0) html += `<th>${display}</th>`;
+          else html += `<td>${display}</td>`;
+        });
+        html += "</tr>";
+      });
+      html += "</tbody></table></div>";
+      return html;
+    }
+
+    // Sự kiện chọn sheet
+    document.getElementById("sheetSelect").addEventListener("change", function() {
+      showSheet(this.value);
+    });
+
+    // Xử lý xuất PDF
+    document.getElementById("infoForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      exportPDF();
+    });
+
+    async function exportPDF() {
+      const { jsPDF } = window.jspdf;
+      // Tạo PDF theo chiều dọc (portrait)
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+      // Lấy thông tin khách hàng
+      const name = document.getElementById("customerName").value.trim();
+      const phone = document.getElementById("customerPhone").value.trim();
+      const address = document.getElementById("customerAddress").value.trim();
+      const sheetName = document.getElementById("sheetSelect").value;
+
+      // Lấy dữ liệu bảng cước
+      const sheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+      // Tìm hàng trống để tách 2 bảng
+      let splitIdx = data.findIndex(row => row.every(cell => cell === undefined || cell === null || cell === ""));
+      let table1 = data, table2 = [];
+      if (splitIdx !== -1) {
+        table1 = data.slice(0, splitIdx);
+        table2 = data.slice(splitIdx + 1);
+      }
+
+      // Tiêu đề
+      doc.setFontSize(18);
+      doc.setTextColor(25, 118, 210);
+      doc.text("BÁO GIÁ BẢNG CƯỚC BCCP", 105, 18, { align: "center" });
+
+      // Thông tin khách hàng
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Khách hàng: ${name}`, 14, 30);
+      doc.text(`SĐT: ${phone}`, 14, 38);
+      doc.text(`Địa chỉ: ${address}`, 14, 46);
+      doc.text(`Bảng cước: ${sheetName}`, 14, 54);
+
+      let y = 62;
+
+      // Hàm vẽ bảng
+      function drawTable(table, title) {
+        if (!table || table.length === 0) return;
+        doc.setFontSize(13);
+        doc.setTextColor(21, 101, 192);
+        doc.text(title, 14, y);
+        y += 6;
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+
+        // Tính số cột
+        const colCount = table[0].length;
+        const colWidth = (190 - 28) / colCount; // A4 portrait: 210mm, lề 10mm mỗi bên
+
+        // Header
+        doc.setFillColor(227, 240, 252);
+        table[0].forEach((cell, i) => {
+          doc.rect(14 + i * colWidth, y, colWidth, 8, "F");
+          doc.setFont(undefined, "bold");
+          doc.text(String(cell ?? ""), 14 + i * colWidth + colWidth / 2, y + 5, { align: "center" });
+        });
+        y += 8;
+
+        // Rows
+        doc.setFont(undefined, "normal");
+        for (let r = 1; r < table.length; r++) {
+          table[r].forEach((cell, i) => {
+            doc.rect(14 + i * colWidth, y, colWidth, 8);
+            let display = cell ?? "";
+            if (
+              typeof display === "number" ||
+              (typeof display === "string" && display.trim() !== "" && !isNaN(display))
+            ) {
+              display = Number(display).toLocaleString("en-US");
+            }
+            doc.text(String(display), 14 + i * colWidth + colWidth / 2, y + 5, { align: "center" });
+          });
+          y += 8;
+          if (y > 270) { // sang trang mới nếu hết trang
+            doc.addPage();
+            y = 20;
+          }
+        }
+        y += 6;
+      }
+
+      if (table1.length > 0) drawTable(table1, "Cước chưa thuế");
+      if (table2.length > 0) drawTable(table2, "Cước có thuế");
+
+      doc.save(`BaoGia_BangCuoc_${sheetName}.pdf`);
+    }
+
+    // Tải workbook khi vào trang
+    loadWorkbook();
+  </script>
+</body>
+</html>
