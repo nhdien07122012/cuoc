@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý bảng cước BCCP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 10px; }
+    .container { max-width: 600px; margin: auto; overflow-x: auto; }
+    select, button { padding: 8px; margin: 8px 0; width: 100%; font-size: 1em; }
+    .tariff-section { margin-bottom: 24px; }
+    .tariff-title { font-weight: bold; font-size: 1.1em; margin: 12px 0 6px 0; color: #1976d2; }
+    .table-responsive { width: 100%; overflow-x: auto; }
+    table { width: 100%; min-width: 500px; border-collapse: collapse; margin-bottom: 12px; background: #fff; box-shadow: 0 2px 8px #0001; border-radius: 8px; overflow: hidden; }
+    th, td { 
+      padding: 8px 6px; 
+      border: 1px solid #e0e0e0; 
+      text-align: center; /* căn giữa nội dung */
+      word-break: break-word; 
+    }
+    th { background: #f5f5f5; }
+    @media (max-width: 600px) {
+      .container { padding: 0 2px; }
+      .tariff-title { font-size: 1em; }
+      table, th, td { font-size: 0.92em; }
+      th, td { padding: 6px 3px; text-align: center; } /* căn giữa trên mobile */
+      table { min-width: 350px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Quản lý bảng cước BCCP - VNPOST(2025)</h2>
+    <select id="sheetSelect"></select>
+    <div id="tariffTables"></div>
+  </div>
+  <script>
+    let workbook = null;
+
+    // Load file Excel và lấy danh sách sheet
+    async function loadWorkbook() {
+      const response = await fetch("data.xlsx");
+      const arrayBuffer = await response.arrayBuffer();
+      workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+      // Đổ danh sách sheet vào select
+      const select = document.getElementById("sheetSelect");
+      select.innerHTML = "";
+      workbook.SheetNames.forEach((name, idx) => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+      // Hiển thị sheet đầu tiên
+      showSheet(workbook.SheetNames[0]);
+    }
+
+    // Hiển thị sheet được chọn
+    function showSheet(sheetName) {
+      const sheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+      // Tìm hàng trống để tách 2 bảng
+      let splitIdx = data.findIndex(row => row.every(cell => cell === undefined || cell === null || cell === ""));
+      let table1 = data, table2 = [];
+      if (splitIdx !== -1) {
+        table1 = data.slice(0, splitIdx);
+        table2 = data.slice(splitIdx + 1);
+      }
+
+      // Tạo HTML cho 2 bảng
+      let html = "";
+      if (table1.length > 0) {
+        html += `<div class="tariff-section">
+          <div class="tariff-title">Cước chưa thuế</div>
+          ${renderTable(table1)}
+        </div>`;
+      }
+      if (table2.length > 0) {
+        html += `<div class="tariff-section">
+          <div class="tariff-title">Cước có thuế</div>
+          ${renderTable(table2)}
+        </div>`;
+      }
+      document.getElementById("tariffTables").innerHTML = html;
+    }
+
+    // Render bảng HTML từ mảng 2 chiều
+    function renderTable(data) {
+      if (!data || data.length === 0) return "<i>Không có dữ liệu</i>";
+      let html = '<div class="table-responsive"><table><tbody>';
+      data.forEach((row, idx) => {
+        html += "<tr>";
+        row.forEach(cell => {
+          let display = cell ?? "";
+          // Nếu là số hoặc chuỗi số, định dạng phân cách hàng ngàn
+          if (
+            typeof display === "number" ||
+            (typeof display === "string" && display.trim() !== "" && !isNaN(display))
+          ) {
+            display = Number(display).toLocaleString("en-US");
+          }
+          if (idx === 0) html += `<th>${display}</th>`;
+          else html += `<td>${display}</td>`;
+        });
+        html += "</tr>";
+      });
+      html += "</tbody></table></div>";
+      return html;
+    }
+
+    // Sự kiện chọn sheet
+    document.getElementById("sheetSelect").addEventListener("change", function() {
+      showSheet(this.value);
+    });
+
+    // Tải workbook khi vào trang
+    loadWorkbook();
+  </script>
+</body>
+</html>
