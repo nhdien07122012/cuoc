@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Tính giá cước sau chiết khấu</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+    body {
+        margin: 0;
+        background: #f4f7fa;
+        font-family: 'Roboto', sans-serif;
+        color: #333;
+    }
+    /* HEADER GIỐNG GỐC */
+    .header {
+        display: flex;
+        align-items: center;
+        background: #fff;
+        box-shadow: 0 2px 8px #0001;
+        padding: 0 16px;
+        height: 56px;
+        position: relative;
+        z-index: 10;
+    }
+    .logo {
+        height: 36px;
+        margin-right: 10px;
+    }
+    .header-title {
+        font-size: 1.08em;
+        font-weight: 700;
+        color: #1976d2;
+        flex: 1;
+        letter-spacing: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .back-btn {
+        background: #1976d2;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 1em;
+        font-weight: 500;
+        cursor: pointer;
+        margin-left: 12px;
+        transition: background 0.2s;
+        box-shadow: 0 2px 8px #0001;
+    }
+    .back-btn:hover {
+        background: #1251a3;
+    }
+
+    /* MAIN CONTAINER */
+    .container {
+        max-width: 700px;
+        margin: 30px auto;
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 4px 24px #0002;
+        padding: 24px;
+    }
+    h2 {
+        text-align: center;
+        color: #1976d2;
+        margin-bottom: 18px;
+        letter-spacing: 1px;
+    }
+    .form-group {
+        margin-bottom: 12px;
+    }
+    label {
+        font-weight: 500;
+        color: #1976d2;
+        display: block;
+        margin-bottom: 4px;
+    }
+    select, input {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #b0bec5;
+        background: #f8fafc;
+        font-size: 1em;
+    }
+    select:focus, input:focus {
+        border: 1.5px solid #1976d2;
+        outline: none;
+    }
+    .btn {
+        width: 100%;
+        padding: 10px;
+        background: #1976d2;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.05em;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 8px;
+        transition: background 0.2s;
+        box-shadow: 0 2px 8px #0001;
+    }
+    .btn:hover {
+        background: #1251a3;
+    }
+    .result {
+        margin-top: 20px;
+        padding: 15px;
+        background: #e3f0fc;
+        border-radius: 10px;
+    }
+    .result p {
+        margin: 6px 0;
+        font-weight: 500;
+    }
+</style>
+</head>
+<body>
+<div class="header">
+    <img src="logo.webp" alt="Logo" class="logo">
+    <div class="header-title">Tính giá cước sau chiết khấu</div>
+    <button class="back-btn" onclick="window.location.href='index.html'">Quay lại</button>
+</div>
+<div class="container">
+    <h2>Chọn thông tin</h2>
+    <form id="formCalc">
+        <div class="form-group">
+            <label for="sheetSelect">Bảng cước</label>
+            <select id="sheetSelect" required></select>
+        </div>
+        <div class="form-group">
+            <label for="stepSelect">Nấc cước</label>
+            <select id="stepSelect" required></select>
+        </div>
+        <div class="form-group">
+            <label for="zoneSelect">Vùng</label>
+            <select id="zoneSelect" required></select>
+        </div>
+        <div class="form-group">
+            <label for="discount">Chiết khấu (%)</label>
+            <input type="number" id="discount" min="0" max="100" step="0.01" value="0">
+        </div>
+        <button type="submit" class="btn">Tính giá</button>
+    </form>
+    <div class="result" id="result" style="display:none;">
+        <p>Giá gốc: <span id="originalPrice"></span></p>
+        <p>Giá sau chiết khấu: <span id="discountedPrice"></span></p>
+        <p>Giá giảm trừ cho KH: <span id="saved"></span></p>
+    </div>
+</div>
+
+<script>
+let workbook, currentData = [];
+
+// Load file Excel
+async function loadWorkbook() {
+    const response = await fetch("data.xlsx");
+    const arrayBuffer = await response.arrayBuffer();
+    workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+    const sheetSelect = document.getElementById("sheetSelect");
+    workbook.SheetNames.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        sheetSelect.appendChild(opt);
+    });
+
+    sheetSelect.addEventListener("change", () => loadSheet(sheetSelect.value));
+    loadSheet(workbook.SheetNames[0]);
+}
+
+// Chỉ lấy bảng sau thuế (bảng dưới, sau dòng trống)
+function loadSheet(sheetName) {
+    const sheet = workbook.Sheets[sheetName];
+    const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+    // Tìm dòng trống
+    const emptyRowIndex = data.findIndex(row => row.every(cell => cell === undefined || cell === null || cell === ""));
+    let tableAfterTax = [];
+
+    if (emptyRowIndex !== -1 && emptyRowIndex < data.length - 1) {
+        tableAfterTax = data.slice(emptyRowIndex + 1).filter(r => r.length);
+    } else {
+        tableAfterTax = data;
+    }
+
+    currentData = tableAfterTax;
+    fillSteps();
+}
+
+function fillSteps() {
+    const stepSelect = document.getElementById("stepSelect");
+    stepSelect.innerHTML = "";
+    const steps = currentData.slice(1).map(r => r[0]).filter(Boolean);
+    steps.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s;
+        opt.textContent = s;
+        stepSelect.appendChild(opt);
+    });
+    fillZones();
+}
+
+function fillZones() {
+    const zoneSelect = document.getElementById("zoneSelect");
+    zoneSelect.innerHTML = "";
+    const header = currentData[0].slice(1); // bỏ cột "Nấc khối lượng"
+    header.forEach(z => {
+        const opt = document.createElement("option");
+        opt.value = z;
+        opt.textContent = z;
+        zoneSelect.appendChild(opt);
+    });
+}
+
+document.getElementById("formCalc").addEventListener("submit", function(e){
+    e.preventDefault();
+    const step = document.getElementById("stepSelect").value;
+    const zone = document.getElementById("zoneSelect").value;
+    const discount = parseFloat(document.getElementById("discount").value) || 0;
+
+    const row = currentData.find(r => r[0] == step);
+    const zoneIndex = currentData[0].indexOf(zone);
+    if(row && zoneIndex >= 0){
+        const original = parseFloat(row[zoneIndex]);
+        const discounted = original * (1 - discount/100);
+        document.getElementById("originalPrice").textContent = original.toLocaleString();
+        document.getElementById("discountedPrice").textContent = Math.round(discounted).toLocaleString();
+        document.getElementById("saved").textContent = (original - discounted).toLocaleString();
+        document.getElementById("result").style.display = "block";
+    }
+});
+
+loadWorkbook();
+</script>
+</body>
+</html>

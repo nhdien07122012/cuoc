@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <title>Tính chiết khấu bảng cước</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/webp" href="logo.ico">
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -286,11 +288,9 @@
         document.getElementById("tariffTables").innerHTML = "<i>Không có dữ liệu bảng cước có thuế.</i>";
         return;
       }
-      // Tạo bảng mới đã giảm trừ chiết khấu
       const newTable = table2Raw.map((row, idx) => {
-        if (idx === 0) return row; // Header giữ nguyên
+        if (idx === 0) return row;
         return row.map(cell => {
-          // Nếu là số hoặc chuỗi số, giảm trừ chiết khấu
           if (
             typeof cell === "number" ||
             (typeof cell === "string" && cell.trim() !== "" && !isNaN(cell))
@@ -303,9 +303,10 @@
         });
       });
 
-      // Hiển thị bảng
       let html = `<div class="tariff-section">
         <div class="tariff-title">Bảng cước có thuế sau chiết khấu (${discount}%):</div>
+        <button onclick="copyTariffTableImage()" style="margin-bottom:10px;float:right;background:#43a047;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-weight:600;cursor:pointer;">Copy bảng cước (ảnh)</button>
+        <div style="clear:both"></div>
         ${renderTable(newTable)}
       </div>`;
       document.getElementById("tariffTables").innerHTML = html;
@@ -325,6 +326,23 @@
       });
       html += "</tbody></table></div>";
       return html;
+    }
+
+    // Hàm copy bảng cước dưới dạng hình ảnh
+    async function copyTariffTableImage() {
+      const tableDiv = document.querySelector("#tariffTables .table-responsive");
+      if (!tableDiv) return alert("Không tìm thấy bảng để copy!");
+      const canvas = await html2canvas(tableDiv, { backgroundColor: "#fff", scale: 2 });
+      canvas.toBlob(async function(blob) {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blob })
+          ]);
+          alert("Đã copy bảng cước dưới dạng hình ảnh!");
+        } catch (e) {
+          alert("Trình duyệt của bạn không hỗ trợ copy ảnh hoặc bạn cần cấp quyền clipboard.");
+        }
+      });
     }
 
     // Sự kiện chọn sheet
