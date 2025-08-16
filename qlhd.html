@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Tạo mã hợp đồng CMS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/webp" href="logo.ico">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      background: #f4f7fa;
+      font-family: 'Roboto', Arial, sans-serif;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      box-shadow: 0 2px 8px #0001;
+      padding: 0 16px;
+      height: 56px;
+      position: relative;
+      z-index: 10;
+    }
+    .logo {
+      height: 36px;
+      margin-right: 10px;
+    }
+    .header-title {
+      font-size: 1.08em;
+      font-weight: 700;
+      color: #1976d2;
+      flex: 1;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .back-btn {
+      background: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 1em;
+      font-weight: 500;
+      cursor: pointer;
+      margin-left: 12px;
+      transition: background 0.2s;
+      box-shadow: 0 2px 8px #0001;
+    }
+    .back-btn:hover {
+      background: #1251a3;
+    }
+    .main {
+      max-width: 100%;
+      margin: 18px auto;
+      padding: 0 4vw;
+    }
+    .container {
+      max-width: 600px;
+      margin: 32px auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #0002;
+      padding: 28px 18px 24px 18px;
+    }
+    h2 {
+      text-align: center;
+      color: #1976d2;
+      margin-bottom: 18px;
+      letter-spacing: 1px;
+    }
+    label {
+      font-weight: 500;
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 6px;
+      color: #1565c0;
+    }
+    select, input {
+      padding: 10px 12px;
+      margin-bottom: 16px;
+      width: 100%;
+      font-size: 1.05em;
+      border-radius: 8px;
+      border: 1px solid #b0bec5;
+      background: #f8fafc;
+      transition: border 0.2s;
+    }
+    select:focus, input:focus {
+      border: 1.5px solid #1976d2;
+      outline: none;
+    }
+    .copy-btn, .add-btn {
+      background: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 1em;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      box-shadow: 0 2px 8px #0001;
+    }
+    .copy-btn:hover, .add-btn:hover {
+      background: #1251a3;
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .copy-btn {
+      width: 100%;
+      margin-top: 8px;
+    }
+    @media (max-width: 700px) {
+      .header {
+        padding: 0 6px;
+        height: 48px;
+      }
+      .logo {
+        height: 28px;
+        margin-right: 6px;
+      }
+      .header-title {
+        font-size: 0.98em;
+      }
+      .main {
+        padding: 0 2vw;
+        margin: 10px auto;
+      }
+      .container {
+        padding: 16px 12px;
+      }
+      select, input {
+        font-size: 0.97em;
+      }
+      .back-btn, .copy-btn, .add-btn {
+        padding: 6px 10px;
+        font-size: 0.97em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="logo.webp" alt="Logo" class="logo">
+    <div class="header-title">Quản lý hợp đồng</div>
+    <button class="back-btn" onclick="window.history.back()">Quay lại</button>
+  </div>
+
+  <div class="main">
+    <div class="container">
+      <h2>Tạo mã hợp đồng</h2>
+
+      <label for="col1">Mã hợp đồng:</label>
+      <div class="btn-group">
+        <select id="col1"></select>
+        <button class="add-btn" onclick="addNew('col1')">+ Thêm</button>
+      </div>
+
+      <label for="col2">Loại khách hàng:</label>
+      <div class="btn-group">
+        <select id="col2"></select>
+        <button class="add-btn" onclick="addNew('col2')">+ Thêm</button>
+      </div>
+
+      <label>Mã hợp đồng sinh ra:</label>
+      <input type="text" id="contractCode" readonly>
+
+      <button class="copy-btn" onclick="copyCode()">Copy mã hợp đồng</button>
+    </div>
+  </div>
+
+<script>
+const API_URL = "https://sheetdb.io/api/v1/u6m515r7879tx"; // thay bằng API của bạn
+const col1Dropdown = document.getElementById("col1");
+const col2Dropdown = document.getElementById("col2");
+const contractCodeInput = document.getElementById("contractCode");
+
+let currentIndex = 1; // số thứ tự
+
+// Load dữ liệu ban đầu
+function loadData() {
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(data => {
+      currentIndex = data.length + 1;
+      col1Dropdown.innerHTML = "";
+      col2Dropdown.innerHTML = "";
+
+      let col1Values = [...new Set(data.map(row => row.mahopdong).filter(v => v))];
+      let col2Values = [...new Set(data.map(row => row.loaikhachhang).filter(v => v))];
+
+      col1Values.forEach(value => {
+        let option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        col1Dropdown.appendChild(option);
+      });
+
+      col2Values.forEach(value => {
+        let option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        col2Dropdown.appendChild(option);
+      });
+
+      // Nếu rỗng thì cho nhập mới
+      if (col1Dropdown.options.length === 0) addNew("col1");
+      if (col2Dropdown.options.length === 0) addNew("col2");
+
+      generateContractCode();
+    });
+}
+
+// Sinh mã hợp đồng
+function generateContractCode() {
+  const mahopdong = col1Dropdown.value || "XXX";
+  const loaikhachhang = col2Dropdown.value || "YYY";
+  const sttFormatted = String(currentIndex).padStart(2, "0");
+  const code = `${sttFormatted}/TTKD-BĐ${mahopdong}-${loaikhachhang}`;
+  contractCodeInput.value = code;
+}
+
+// Copy và ghi vào sheet
+function copyCode() {
+  contractCodeInput.select();
+  contractCodeInput.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(contractCodeInput.value)
+    .then(() => {
+      alert("Đã copy mã hợp đồng!");
+      saveToSheet();
+    });
+}
+
+// Ghi dữ liệu đầy đủ vào Google Sheet
+function saveToSheet() {
+  const mahopdong = col1Dropdown.value;
+  const loaikhachhang = col2Dropdown.value;
+  const sttFormatted = String(currentIndex).padStart(2, "0");
+
+  fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      data: {
+        mahopdong: mahopdong,
+        loaikhachhang: loaikhachhang,
+        stt: sttFormatted
+      }
+    })
+  })
+  .then(res => res.json())
+  .then(() => {
+    console.log("Đã ghi vào Google Sheet");
+    currentIndex++;
+    generateContractCode();
+  });
+}
+
+// Thêm giá trị mới vào dropdown (không ghi vào sheet)
+function addNew(type) {
+  let newValue = prompt("Nhập giá trị mới:");
+  if (newValue && newValue.trim() !== "") {
+    newValue = newValue.trim();
+    const dropdown = document.getElementById(type);
+    let exists = Array.from(dropdown.options).some(opt => opt.value === newValue);
+    if (!exists) {
+      let option = document.createElement("option");
+      option.value = newValue;
+      option.textContent = newValue;
+      dropdown.appendChild(option);
+      dropdown.value = newValue;
+      generateContractCode();
+    } else {
+      alert("Giá trị này đã tồn tại!");
+    }
+  }
+}
+
+col1Dropdown.addEventListener("change", generateContractCode);
+col2Dropdown.addEventListener("change", generateContractCode);
+
+loadData();
+</script>
+
+</body>
+</html>
