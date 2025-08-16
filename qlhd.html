@@ -1,31 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>Tạo mã hợp đồng CMS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/webp" href="logo.ico">
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
   <style>
+    * {
+      box-sizing: border-box;
+    }
+    
     body {
       margin: 0;
       background: #f4f7fa;
       font-family: 'Roboto', Arial, sans-serif;
+      color: #333;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
+    
     .header {
       display: flex;
       align-items: center;
       background: #fff;
-      box-shadow: 0 2px 8px #0001;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       padding: 0 16px;
       height: 56px;
       position: relative;
       z-index: 10;
+      flex-shrink: 0;
     }
+    
     .logo {
       height: 36px;
       margin-right: 10px;
     }
+    
     .header-title {
       font-size: 1.08em;
       font-weight: 700;
@@ -36,6 +49,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    
     .back-btn {
       background: #1976d2;
       color: #fff;
@@ -45,103 +59,231 @@
       font-size: 1em;
       font-weight: 500;
       cursor: pointer;
-      margin-left: 12px;
       transition: background 0.2s;
-      box-shadow: 0 2px 8px #0001;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      white-space: nowrap;
+      min-width: 100px;
     }
+    
     .back-btn:hover {
       background: #1251a3;
     }
+    
     .main {
-      max-width: 100%;
+      flex: 1;
+      width: 100%;
+      max-width: 800px;
       margin: 18px auto;
-      padding: 0 4vw;
+      padding: 0 16px;
     }
+    
     .container {
-      max-width: 600px;
-      margin: 32px auto;
+      width: 100%;
+      margin: 24px auto;
       background: #fff;
       border-radius: 18px;
-      box-shadow: 0 4px 24px #0002;
-      padding: 28px 18px 24px 18px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+      padding: 28px 20px;
     }
+    
     h2 {
       text-align: center;
       color: #1976d2;
-      margin-bottom: 18px;
+      margin: 0 0 24px 0;
       letter-spacing: 1px;
+      font-size: 1.5em;
     }
+    
+    .input-group {
+      margin-bottom: 20px;
+    }
+    
     label {
       font-weight: 500;
       display: block;
-      margin-top: 12px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       color: #1565c0;
+      font-size: 0.95em;
     }
+    
     select, input {
-      padding: 10px 12px;
-      margin-bottom: 16px;
+      padding: 12px 14px;
       width: 100%;
-      font-size: 1.05em;
+      font-size: 1em;
       border-radius: 8px;
       border: 1px solid #b0bec5;
       background: #f8fafc;
-      transition: border 0.2s;
+      transition: all 0.2s;
     }
+    
     select:focus, input:focus {
       border: 1.5px solid #1976d2;
       outline: none;
+      box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
     }
-    .copy-btn, .add-btn {
+    
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .btn {
       background: #1976d2;
       color: #fff;
       border: none;
       border-radius: 8px;
-      padding: 10px 16px;
+      padding: 12px 16px;
       font-size: 1em;
       font-weight: 500;
       cursor: pointer;
       transition: background 0.2s;
-      box-shadow: 0 2px 8px #0001;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
     }
-    .copy-btn:hover, .add-btn:hover {
+    
+    .btn:hover {
       background: #1251a3;
     }
-    .btn-group {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
+    
+    .btn.add-btn::before {
+      content: "+";
+      margin-right: 5px;
+      font-weight: bold;
     }
+    
     .copy-btn {
+      background: #2e7d32;
       width: 100%;
-      margin-top: 8px;
+      margin-top: 16px;
     }
+    
+    .copy-btn:hover {
+      background: #1b5e20;
+    }
+    
+    .result-container {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px dashed #e0e0e0;
+    }
+    
+    .instructions {
+      background: #e3f2fd;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 24px;
+      font-size: 0.9em;
+    }
+    
+    .instructions h3 {
+      margin-top: 0;
+      color: #1976d2;
+    }
+    
+    .instructions ul {
+      padding-left: 20px;
+      margin-bottom: 0;
+    }
+    
+    .instructions li {
+      margin-bottom: 8px;
+    }
+    
+    /* Responsive Design */
     @media (max-width: 700px) {
       .header {
-        padding: 0 6px;
-        height: 48px;
+        padding: 0 12px;
+        height: 52px;
       }
+      
       .logo {
-        height: 28px;
-        margin-right: 6px;
+        height: 32px;
       }
-      .header-title {
-        font-size: 0.98em;
+      
+      .back-btn {
+        padding: 8px 12px;
+        font-size: 0.9em;
+        min-width: auto;
       }
+      
       .main {
-        padding: 0 2vw;
-        margin: 10px auto;
+        padding: 0 12px;
+        margin: 12px auto;
       }
+      
+      .container {
+        padding: 20px 16px;
+        margin: 16px auto;
+        border-radius: 14px;
+      }
+      
+      h2 {
+        font-size: 1.3em;
+        margin-bottom: 20px;
+      }
+      
+      select, input {
+        padding: 10px 12px;
+        font-size: 0.95em;
+      }
+      
+      .btn {
+        padding: 10px 12px;
+        font-size: 0.95em;
+      }
+      
+      .btn-group {
+        flex-direction: column;
+        gap: 6px;
+      }
+      
+      .instructions {
+        padding: 12px;
+        font-size: 0.85em;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .header {
+        padding: 0 8px;
+      }
+      
+      .header-title {
+        font-size: 0.95em;
+      }
+      
+      .back-btn {
+        padding: 6px 10px;
+        font-size: 0.85em;
+      }
+      
       .container {
         padding: 16px 12px;
+        border-radius: 12px;
       }
-      select, input {
-        font-size: 0.97em;
+      
+      h2 {
+        font-size: 1.2em;
       }
-      .back-btn, .copy-btn, .add-btn {
-        padding: 6px 10px;
-        font-size: 0.97em;
+      
+      .input-group {
+        margin-bottom: 16px;
       }
+    }
+    
+    /* Animation */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+    
+    .copy-btn:active {
+      animation: pulse 0.3s ease;
     }
   </style>
 </head>
@@ -155,33 +297,48 @@
   <div class="main">
     <div class="container">
       <h2>Tạo mã hợp đồng</h2>
-
-      <label for="col1">Mã hợp đồng:</label>
-      <div class="btn-group">
+      
+      <div class="input-group">
+        <label for="col1">Mã hợp đồng:</label>
         <select id="col1"></select>
-        <button class="add-btn" onclick="addNew('col1')">+ Thêm</button>
+        <div class="btn-group">
+          <button class="btn add-btn" onclick="addNew('col1')">Thêm mã mới</button>
+        </div>
       </div>
-
-      <label for="col2">Loại khách hàng:</label>
-      <div class="btn-group">
+      
+      <div class="input-group">
+        <label for="col2">Loại khách hàng:</label>
         <select id="col2"></select>
-        <button class="add-btn" onclick="addNew('col2')">+ Thêm</button>
+        <div class="btn-group">
+          <button class="btn add-btn" onclick="addNew('col2')">Thêm loại mới</button>
+        </div>
       </div>
-
-      <label>Mã hợp đồng sinh ra:</label>
-      <input type="text" id="contractCode" readonly>
-
-      <button class="copy-btn" onclick="copyCode()">Copy mã hợp đồng</button>
+      
+      <div class="result-container">
+        <label>Mã hợp đồng sinh ra:</label>
+        <input type="text" id="contractCode" readonly>
+        <button class="btn copy-btn" onclick="copyCode()">Copy mã hợp đồng</button>
+      </div>
+      
+      <div class="instructions">
+        <h3>Hướng dẫn sử dụng:</h3>
+        <ul>
+          <li>Chọn hoặc thêm mới mã hợp đồng và loại khách hàng</li>
+          <li>Mã sẽ được tự động tạo theo định dạng: STT/TTKD-BĐ[MAHOPDONG]-[LOAIKH]</li>
+          <li>Nhấn nút "Copy mã hợp đồng" để sao chép mã và lưu vào hệ thống</li>
+          <li>Mỗi lần tạo mã thành công, số thứ tự sẽ tự động tăng lên</li>
+        </ul>
+      </div>
     </div>
   </div>
 
 <script>
-const API_URL = "https://sheetdb.io/api/v1/u6m515r7879tx"; // thay bằng API của bạn
+const API_URL = "https://sheetdb.io/api/v1/u6m515r7879tx";
 const col1Dropdown = document.getElementById("col1");
 const col2Dropdown = document.getElementById("col2");
 const contractCodeInput = document.getElementById("contractCode");
 
-let currentIndex = 1; // số thứ tự
+let currentIndex = 1;
 
 // Load dữ liệu ban đầu
 function loadData() {
@@ -194,6 +351,15 @@ function loadData() {
 
       let col1Values = [...new Set(data.map(row => row.mahopdong).filter(v => v))];
       let col2Values = [...new Set(data.map(row => row.loaikhachhang).filter(v => v))];
+
+      // Thêm option mặc định
+      const defaultOption = document.createElement("option");
+      defaultOption.value = "";
+      defaultOption.textContent = "-- Chọn mã --";
+      defaultOption.disabled = true;
+      defaultOption.selected = true;
+      col1Dropdown.appendChild(defaultOption.cloneNode(true));
+      col2Dropdown.appendChild(defaultOption.cloneNode(true));
 
       col1Values.forEach(value => {
         let option = document.createElement("option");
@@ -209,10 +375,13 @@ function loadData() {
         col2Dropdown.appendChild(option);
       });
 
-      // Nếu rỗng thì cho nhập mới
-      if (col1Dropdown.options.length === 0) addNew("col1");
-      if (col2Dropdown.options.length === 0) addNew("col2");
-
+      generateContractCode();
+    })
+    .catch(error => {
+      console.error("Lỗi khi tải dữ liệu:", error);
+      // Tạo dropdown trống nếu không kết nối được API
+      col1Dropdown.innerHTML = '<option value="" disabled selected>-- Chọn mã --</option>';
+      col2Dropdown.innerHTML = '<option value="" disabled selected>-- Chọn loại --</option>';
       generateContractCode();
     });
 }
@@ -228,12 +397,32 @@ function generateContractCode() {
 
 // Copy và ghi vào sheet
 function copyCode() {
+  if (!col1Dropdown.value || !col2Dropdown.value) {
+    alert("Vui lòng chọn mã hợp đồng và loại khách hàng trước khi copy!");
+    return;
+  }
+  
   contractCodeInput.select();
   contractCodeInput.setSelectionRange(0, 99999);
+  
   navigator.clipboard.writeText(contractCodeInput.value)
     .then(() => {
-      alert("Đã copy mã hợp đồng!");
+      // Thay đổi tạm thời nút copy để hiển thị trạng thái thành công
+      const copyBtn = document.querySelector('.copy-btn');
+      const originalText = copyBtn.textContent;
+      copyBtn.textContent = '✓ Đã copy!';
+      copyBtn.style.backgroundColor = '#2e7d32';
+      
+      setTimeout(() => {
+        copyBtn.textContent = originalText;
+        copyBtn.style.backgroundColor = '';
+      }, 2000);
+      
       saveToSheet();
+    })
+    .catch(err => {
+      console.error('Không thể copy: ', err);
+      alert("Không thể sao chép, vui lòng thử lại!");
     });
 }
 
@@ -259,16 +448,21 @@ function saveToSheet() {
     console.log("Đã ghi vào Google Sheet");
     currentIndex++;
     generateContractCode();
+  })
+  .catch(error => {
+    console.error("Lỗi khi ghi dữ liệu:", error);
+    alert("Có lỗi xảy ra khi lưu dữ liệu, vui lòng thử lại!");
   });
 }
 
-// Thêm giá trị mới vào dropdown (không ghi vào sheet)
+// Thêm giá trị mới vào dropdown
 function addNew(type) {
-  let newValue = prompt("Nhập giá trị mới:");
+  let newValue = prompt(`Nhập giá trị mới cho ${type === 'col1' ? 'mã hợp đồng' : 'loại khách hàng'}:`);
   if (newValue && newValue.trim() !== "") {
     newValue = newValue.trim();
     const dropdown = document.getElementById(type);
     let exists = Array.from(dropdown.options).some(opt => opt.value === newValue);
+    
     if (!exists) {
       let option = document.createElement("option");
       option.value = newValue;
@@ -276,9 +470,14 @@ function addNew(type) {
       dropdown.appendChild(option);
       dropdown.value = newValue;
       generateContractCode();
+      
+      // Hiển thị thông báo thành công
+      alert(`Đã thêm "${newValue}" thành công!`);
     } else {
-      alert("Giá trị này đã tồn tại!");
+      alert("Giá trị này đã tồn tại! Vui lòng chọn từ danh sách.");
     }
+  } else if (newValue !== null) {
+    alert("Vui lòng nhập giá trị hợp lệ!");
   }
 }
 
@@ -287,6 +486,5 @@ col2Dropdown.addEventListener("change", generateContractCode);
 
 loadData();
 </script>
-
 </body>
 </html>
